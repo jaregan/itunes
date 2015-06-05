@@ -4,19 +4,27 @@ app.controller('mainCtrl', function($scope, itunesService){
   //This is setting up the default behavior of our ng-grid. The important thing to note is
   //the 'data' property. The value is 'songData'. That means ng-grid is looking for songData on $scope and is putting whatever songData is into the grid.
   //this means when you make your iTunes request, you'll need to get back the information, parse it accordingly, then set it to songData on the scope -> $scope.songData = ...
+  $scope.filterOptions = {
+    filterText: ''
+  };
+
   $scope.gridOptions = { 
       data: 'songData',
       height: '110px',
+      filterOptions: $scope.filterOptions,
       sortInfo: {fields: ['Song', 'Artist', 'Collection', 'Type'], directions: ['asc']},
       columnDefs: [
         {field: 'Play', displayName: 'Play', width: '40px', cellTemplate: '<div class="ngCellText" ng-class="col.colIndex()"><a href="{{row.getProperty(col.field)}}"><img src="http://www.icty.org/x/image/Miscellaneous/play_icon30x30.png"></a></div>'},
         {field: 'Artist', displayName: 'Artist'},
+        {field: 'Track', displayName: 'Track'},
         {field: 'Collection', displayName: 'Collection'},
         {field: 'AlbumArt', displayName: 'Album Art', width: '110px', cellTemplate: '<div class="ngCellText" ng-class="col.colIndex()"><img src="{{row.getProperty(col.field)}}"></div>'},
         {field: 'Type', displayName: 'Type'},
         {field: 'CollectionPrice', displayName: 'Collection Price'},
       ]
   };
+
+  
 
   //Our controller is what's going to connect our 'heavy lifting' itunesService with our view (index.html) so our user can see the results they get back from itunes.
 
@@ -29,9 +37,63 @@ app.controller('mainCtrl', function($scope, itunesService){
   //*remember, that method should be expecting an artist name. The artist name is coming from the input box on index.html, head over there and check if that input box is tied to any specific model we could use.
   //Also note that that method should be retuning a promise, so you could use .then in this function.
     
-    //Code here
+
+  $scope.getSongData = function () {
+      itunesService.getArtist($scope.artist).then(function(response) {
+        $scope.songData = response;
+      })
+  }
+$scope.typeDropdown = 'All';
+
+  $scope.getSongDataFiltered = function () {
+      itunesService.getArtistFiltered($scope.artist, $scope.typeDropdown).then(function(response) {
+        $scope.songData = response;
+      })
+  }
+
+  $scope.typeValues = [{
+    id: 'All',
+    label: 'All',
+  }, {
+    id: 'music-video',
+    label: 'Music Video',
+  }, {
+    id: 'feature-movie',
+    label: 'Movie',
+  }, {
+    id: 'song',
+    label: 'Music',
+  }, {
+    id: 'podcast',
+    label: 'Podcast',
+  }, {
+    id: 'tv-episode',
+    label: 'TV Show',
+  }];
+
+$scope.typeDropdown = 'All';
 
 
+  $scope.sortValues = 
+  [{
+    id: 'Track',
+    label: 'Media Item Name',
+  }, {
+    id: 'Artist',
+    label: 'Artist',
+  }, {
+    id: 'Collection',
+    label: 'Collection Name',
+  }, {
+    id: 'Type',
+    label: 'Media Type',
+  }];
+
+  $scope.sortDropdown = "Type";
+
+  $scope.sortFunc = function() {
+    $scope.gridOptions.sortBy($scope.sortDropdown);
+  }
   //Check that the above method is working by entering a name into the input field on your web app, and then console.log the result
 
     //Code here
